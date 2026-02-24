@@ -12,8 +12,8 @@ jobs:
     env:
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       OPENAI_MODEL: ${{ secrets.OPENAI_MODEL }}
-      OPENAI_TIMEOUT_SECONDS: "120"
-      OPENAI_MAX_RETRIES: "1"
+      OPENAI_TIMEOUT_SECONDS: "300"
+      OPENAI_MAX_RETRIES: "3"
       DIGEST_RECIPIENTS: ${{ secrets.DIGEST_RECIPIENTS }}
       SMTP_HOST: ${{ secrets.SMTP_HOST }}
       SMTP_PORT: ${{ secrets.SMTP_PORT }}
