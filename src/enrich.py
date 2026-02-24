@@ -5,6 +5,7 @@ import re
 from urllib.parse import urlparse
 
 from bs4 import BeautifulSoup
+import requests
 
 from src.models import Showing
 from src.scrapers.base import fetch_with_cache
@@ -58,7 +59,12 @@ def _fetch_summary_from_url(url: str) -> str | None:
     host_raw = urlparse(url).netloc.lower()
     host = host_raw.replace(".", "_")
     key = f"summary_{host}_{sha1(url.encode('utf-8')).hexdigest()[:10]}"
-    html = fetch_with_cache(url, cache_key=key, ttl_hours=168, timeout_seconds=8)
+    try:
+        html = fetch_with_cache(url, cache_key=key, ttl_hours=168, timeout_seconds=8)
+    except requests.RequestException:
+        return None
+    except Exception:
+        return None
     soup = BeautifulSoup(html, "html.parser")
 
     candidates: list[str] = []
