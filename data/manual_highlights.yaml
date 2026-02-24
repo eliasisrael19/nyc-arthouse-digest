@@ -1,0 +1,18 @@
+items:
+  - title: "The Red Shoes (35mm)"
+    venue: "Film at Lincoln Center"
+    url: "https://www.filmlinc.org/"
+    start: "2026-02-27 19:00"
+    notes: "35mm screening, restored print"
+
+  - title: "Mikey and Nicky"
+    venue: "Metrograph"
+    url: "https://metrograph.com/"
+    start: "2026-02-28 18:30"
+    notes: "One-night screening with intro"
+
+  - title: "Jean Eustache Retrospective Opening Night"
+    venue: "Anthology Film Archives"
+    url: "https://anthologyfilmarchives.org/"
+    start: "2026-03-01 20:00"
+    notes: "Opening-night premiere + Q&A"

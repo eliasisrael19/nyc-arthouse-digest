@@ -1,0 +1,57 @@
+name: Weekly NYC Arthouse Digest
+
+on:
+  schedule:
+    # Hourly on Mondays; guarded below to run only at 9:00 AM America/New_York.
+    - cron: "0 * * * 1"
+  workflow_dispatch:
+
+jobs:
+  send-digest:
+    runs-on: ubuntu-latest
+    env:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      OPENAI_MODEL: ${{ secrets.OPENAI_MODEL }}
+      OPENAI_TIMEOUT_SECONDS: "120"
+      OPENAI_MAX_RETRIES: "1"
+      DIGEST_RECIPIENTS: ${{ secrets.DIGEST_RECIPIENTS }}
+      SMTP_HOST: ${{ secrets.SMTP_HOST }}
+      SMTP_PORT: ${{ secrets.SMTP_PORT }}
+      SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
+      SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+      SMTP_SENDER: ${{ secrets.SMTP_SENDER }}
+      SMTP_STARTTLS: "true"
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Guard for Monday 9:00 AM ET
+        id: guard
+        shell: bash
+        run: |
+          DOW=$(TZ=America/New_York date +%u)
+          HOUR=$(TZ=America/New_York date +%H)
+          if [[ "$DOW" != "1" || "$HOUR" != "09" ]]; then
+            echo "Not Monday 9 AM ET. Skipping."
+            echo "should_run=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "Monday 9 AM ET. Continuing."
+          echo "should_run=true" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Python
+        if: steps.guard.outputs.should_run == 'true' || github.event_name == 'workflow_dispatch'
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        if: steps.guard.outputs.should_run == 'true' || github.event_name == 'workflow_dispatch'
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Send digest
+        if: steps.guard.outputs.should_run == 'true' || github.event_name == 'workflow_dispatch'
+        run: |
+          python -m src.main --send --mode hybrid --venues metrograph lincoln-center ifc angelika-nyc village-east cinema123 film-forum

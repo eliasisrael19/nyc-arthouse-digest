@@ -1,0 +1,11 @@
+recipients:
+  - "you@example.com"
+  - "dad@example.com"
+
+smtp:
+  host: "smtp.mail.me.com"
+  port: 587
+  username: "you@icloud.com"
+  password: "APP_SPECIFIC_PASSWORD"
+  sender: "you@icloud.com"
+  use_starttls: true

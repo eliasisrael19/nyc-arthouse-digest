@@ -1,0 +1,11 @@
+.env
+.DS_Store
+.venv/
+.pytest_cache/
+__pycache__/
+cache/
+digest_preview.html
+digest_preview.txt
+launchd.log
+launchd.err.log
+config.yaml

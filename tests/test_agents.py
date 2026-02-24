@@ -1,0 +1,26 @@
+from __future__ import annotations
+
+from src.agents.openai_extractor import _parse_start
+from src.agents.venue_agent import _clean_filmlinc_rich_text, _filmlinc_landing_url_by_season_id
+
+
+def test_parse_start_supports_common_formats() -> None:
+    assert _parse_start("2026-03-01 19:30") is not None
+    assert _parse_start("2026-03-01T19:30") is not None
+    assert _parse_start("2026-03-01") is not None
+    assert _parse_start("not-a-date") is None
+
+
+def test_filmlinc_landing_map_prefers_cta_url() -> None:
+    html = (
+        '\\"ctaButton\\":{\\"url\\":\\"https://www.filmlinc.org/films/12-days/\\"}'
+        '\\"ctaRelatedFilm\\":{\\"nodes\\":[{\\"slug\\":\\"12-days\\",\\"filmDetails\\":{\\"productionSeasonIds\\":\\"81134\\"}}]}'
+    )
+    mapping = _filmlinc_landing_url_by_season_id(html)
+    assert mapping["81134"] == "https://www.filmlinc.org/films/12-days/"
+
+
+def test_filmlinc_rich_text_cleanup() -> None:
+    raw = "\\u003cp\\u003eA portrait of a city in transition.\\u003c/p\\u003e"
+    cleaned = _clean_filmlinc_rich_text(raw)
+    assert cleaned == "A portrait of a city in transition."
