@@ -227,8 +227,16 @@ def _filmlinc_summary_by_season_id(html: str) -> dict[str, str]:
     for match in film_block_pattern.finditer(html):
         block = match.group(0)
         raw_ids = match.group(1)
-        raw_excerpt = _extract_escaped_field(block, "excerpt") or ""
-        raw_content = _extract_escaped_field(block, "content") or ""
+        raw_excerpt = _extract_between_markers(
+            block,
+            start_marker='\\"excerpt\\":\\"',
+            end_markers=['\\",\\"featuredImage\\":', '\\",\\"filmDetails\\":'],
+        )
+        raw_content = _extract_between_markers(
+            block,
+            start_marker='\\"content\\":\\"',
+            end_markers=['\\",\\"excerpt\\":', '\\",\\"featuredImage\\":'],
+        )
         raw_text = raw_excerpt or raw_content
         if not raw_text:
             continue
@@ -238,6 +246,20 @@ def _filmlinc_summary_by_season_id(html: str) -> dict[str, str]:
         for season_id in [part.strip() for part in raw_ids.split(",") if part.strip()]:
             mapping.setdefault(season_id, cleaned)
     return mapping
+
+
+def _extract_between_markers(block: str, start_marker: str, end_markers: list[str]) -> str:
+    start_idx = block.find(start_marker)
+    if start_idx < 0:
+        return ""
+    value_start = start_idx + len(start_marker)
+
+    end_positions = [block.find(marker, value_start) for marker in end_markers]
+    valid_ends = [pos for pos in end_positions if pos >= 0]
+    if not valid_ends:
+        return ""
+    value_end = min(valid_ends)
+    return block[value_start:value_end]
 
 
 def _clean_filmlinc_rich_text(value: str) -> str | None:
