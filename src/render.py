@@ -134,6 +134,24 @@ def _group_by_venue(showings: list[Showing]) -> dict[str, list[VenueListing]]:
     return dict(sorted(result.items(), key=lambda item: item[0].lower()))
 
 
+def _top_pick_reason(showing: Showing, cross_venue: dict[str, set[str]]) -> str:
+    notes = (showing.notes or "").lower()
+    if "q&a" in notes:
+        return "Includes a live Q&A, which usually makes for a more memorable screening."
+    if "70mm" in notes or "35mm" in notes:
+        return "Special-format presentation (35mm/70mm), which is rare and worth prioritizing."
+    if "premiere" in notes:
+        return "Premiere screening with higher buzz and limited repeat opportunities."
+    if "restored" in notes:
+        return "Restored presentation, a strong chance to see a definitive version on the big screen."
+    venues = cross_venue.get(showing.normalized_title, set())
+    if len(venues) > 1:
+        return "Playing at multiple venues this week, a good signal of strong programming momentum."
+    if showing.start:
+        return "Early-week slot that is easier to plan around before schedules get crowded."
+    return "High-signal pick based on this week’s programming patterns."
+
+
 def render_digest(showings: list[Showing], generated_at: datetime | None = None) -> RenderedDigest:
     now = generated_at or datetime.now()
     week_label = _week_label(now)
@@ -157,6 +175,7 @@ def render_digest(showings: list[Showing], generated_at: datetime | None = None)
         week_label=week_label,
         by_venue=grouped,
         top_picks=picks,
+        top_pick_reasons={pick.normalized_title: _top_pick_reason(pick, cross_venue) for pick in picks},
         cross_venue=cross_venue,
     )
 
@@ -170,6 +189,7 @@ def render_digest(showings: list[Showing], generated_at: datetime | None = None)
     for pick in picks:
         when = pick.start.strftime("%Y-%m-%d %H:%M") if pick.start else "TBA"
         lines.append(f"- {pick.title} ({pick.venue}, {when}) -> {pick.url}")
+        lines.append(f"  Why pick: {_top_pick_reason(pick, cross_venue)}")
 
     lines.append("")
     for venue, items in grouped.items():

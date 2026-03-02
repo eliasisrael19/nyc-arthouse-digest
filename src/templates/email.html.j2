@@ -47,6 +47,12 @@
                           {{ item.notes }}
                         </div>
                         {% endif %}
+                        {% set pick_reason = top_pick_reasons.get(item.normalized_title) %}
+                        {% if pick_reason %}
+                        <div style="font-family: Arial, Helvetica, sans-serif; font-size:13px; color:#23394a; margin-top:6px; line-height:1.45;">
+                          <strong>Why this is a top pick:</strong> {{ pick_reason }}
+                        </div>
+                        {% endif %}
                         {% set venues = cross_venue.get(item.normalized_title, []) %}
                         {% if venues|length > 1 %}
                         <div style="font-family: Arial, Helvetica, sans-serif; font-size:12px; color:#7a6f5e; margin-top:4px;">
@@ -74,12 +80,12 @@
                   <tr>
                     <td style="padding:10px 12px;">
                       {% for venue, items in by_venue.items() %}
-                      <div style="padding:6px 0; border-bottom:{% if loop.last %}0{% else %}1px solid #f0eadf{% endif %}; font-family: Arial, Helvetica, sans-serif; font-size:13px; color:#2d2922;">
-                        <span style="display:inline-block; min-width:18px; text-align:center; background:#efe8da; border:1px solid #d8ccb6; border-radius:10px; font-size:11px; padding:1px 6px; margin-right:8px;">
+                      <div style="padding:10px 0; border-bottom:{% if loop.last %}0{% else %}1px solid #f0eadf{% endif %}; font-family: Arial, Helvetica, sans-serif; font-size:22px; line-height:1.25; color:#2d2922;">
+                        <span style="display:inline-block; min-width:26px; text-align:center; background:#efe8da; border:1px solid #d8ccb6; border-radius:14px; font-size:16px; padding:2px 10px; margin-right:10px; vertical-align:middle;">
                           {{ loop.index }}
                         </span>
                         <strong>{{ venue }}</strong>
-                        <span style="color:#6a5f4f;">({{ items|length }} titles)</span>
+                        <span style="color:#6a5f4f; font-size:18px;">({{ items|length }} titles)</span>
                       </div>
                       {% endfor %}
                     </td>

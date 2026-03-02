@@ -242,6 +242,7 @@ def _clean_summary(value: Any) -> str | None:
     out = _clean_optional(value)
     if not out:
         return None
+    out = out.replace("\\n", " ").replace("\\r", " ").replace("\\t", " ")
     clipped = _take_three_sentences(" ".join(out.split()))
     if _is_summary_junk(clipped):
         return None

@@ -266,6 +266,7 @@ def _clean_filmlinc_rich_text(value: str) -> str | None:
     decoded = _decode_escaped_json_text(value)
     decoded = html_lib.unescape(decoded)
     text = BeautifulSoup(decoded, "html.parser").get_text(" ", strip=True)
+    text = text.replace("\\n", " ").replace("\\r", " ").replace("\\t", " ")
     text = " ".join(text.split())
     if not text:
         return None

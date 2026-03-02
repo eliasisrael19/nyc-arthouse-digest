@@ -101,6 +101,7 @@ def _fetch_summary_from_url(url: str) -> str | None:
 
 
 def _clean_summary(text: str) -> str | None:
+    text = text.replace("\\n", " ").replace("\\r", " ").replace("\\t", " ")
     out = " ".join(text.split())
     out = _take_three_sentences(out)
     if len(out) < 25:
