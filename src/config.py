@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 import os
+import re
 from typing import Any
 
 import yaml
@@ -26,6 +27,7 @@ class AppConfig:
 
 DEFAULT_CONFIG_PATH = Path("config.yaml")
 DEFAULT_DOTENV_PATH = Path(".env")
+EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
 
 def _read_yaml(path: Path) -> dict[str, Any]:
@@ -43,6 +45,36 @@ def _env_bool(name: str, default: bool) -> bool:
     if raw is None:
         return default
     return raw.strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _parse_recipients(raw: str | list[Any]) -> list[str]:
+    if isinstance(raw, str):
+        parts = re.split(r"[\n,;]+", raw)
+    elif isinstance(raw, list):
+        parts = raw
+    else:
+        raise ValueError("Recipients must be a string or list of strings")
+
+    recipients: list[str] = []
+    invalid: list[str] = []
+    seen: set[str] = set()
+    for part in parts:
+        candidate = str(part).strip().strip("'").strip('"')
+        if not candidate:
+            continue
+        if not EMAIL_RE.match(candidate):
+            invalid.append(candidate)
+            continue
+        normalized = candidate.lower()
+        if normalized in seen:
+            continue
+        seen.add(normalized)
+        recipients.append(candidate)
+
+    if invalid:
+        raise ValueError(f"Invalid recipient email address(es): {', '.join(invalid)}")
+
+    return recipients
 
 
 def load_dotenv(path: str | Path = DEFAULT_DOTENV_PATH) -> None:
@@ -66,9 +98,9 @@ def load_config(config_path: str | Path = DEFAULT_CONFIG_PATH) -> AppConfig:
 
     recipients = os.getenv("DIGEST_RECIPIENTS")
     if recipients:
-        recipient_list = [e.strip() for e in recipients.split(",") if e.strip()]
+        recipient_list = _parse_recipients(recipients)
     else:
-        recipient_list = data.get("recipients", [])
+        recipient_list = _parse_recipients(data.get("recipients", []))
 
     smtp_data = data.get("smtp", {})
     smtp = SMTPConfig(

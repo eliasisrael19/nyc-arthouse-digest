@@ -56,6 +56,8 @@ pip install -r requirements.txt
 
 Edit `config.yaml` and/or set environment variables.
 
+Important: local `config.yaml` is not the source of truth for the weekly GitHub-scheduled email. The workflow in `.github/workflows/weekly-digest.yml` sets `DIGEST_RECIPIENTS` from GitHub Actions secrets, which overrides `config.yaml` during scheduled and manual Actions runs.
+
 ### OpenAI agent mode
 
 Create `.env`:
@@ -252,6 +254,11 @@ In your GitHub repo, add these **Repository Secrets**:
 - `SMTP_USERNAME`
 - `SMTP_PASSWORD` (app-specific password)
 - `SMTP_SENDER`
+
+Recipient source of truth for GitHub sends:
+- Scheduled weekly runs use `DIGEST_RECIPIENTS`.
+- Manual Actions runs use `DIGEST_RECIPIENTS_TEST`.
+- Local runs from your Mac use `config.yaml` unless you export `DIGEST_RECIPIENTS`.
 
 Then trigger a one-time test via **Actions > Weekly NYC Arthouse Digest > Run workflow**.
 
