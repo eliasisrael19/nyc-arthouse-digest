@@ -5,11 +5,17 @@ on:
     # Hourly on Mondays; guarded below to run only at 9:00 AM America/New_York.
     - cron: "0 * * * 1"
   workflow_dispatch:
+    inputs:
+      recipients_override:
+        description: "Optional comma-separated recipient list for this manual run"
+        required: false
+        type: string
 
 jobs:
   send-digest:
     runs-on: ubuntu-latest
     env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       OPENAI_MODEL: ${{ secrets.OPENAI_MODEL }}
       OPENAI_TIMEOUT_SECONDS: "300"
@@ -55,12 +61,22 @@ jobs:
         shell: bash
         run: |
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            echo "DIGEST_RECIPIENTS=${{ secrets.DIGEST_RECIPIENTS_TEST }}" >> "$GITHUB_ENV"
-            echo "Using test recipients (manual run)."
+            RECIPIENTS="${{ inputs.recipients_override }}"
+            if [[ -z "$RECIPIENTS" ]]; then
+              RECIPIENTS="${{ secrets.DIGEST_RECIPIENTS_TEST }}"
+              echo "Using test recipients (manual run)."
+            else
+              echo "Using manual recipient override."
+            fi
           else
-            echo "DIGEST_RECIPIENTS=${{ secrets.DIGEST_RECIPIENTS }}" >> "$GITHUB_ENV"
+            RECIPIENTS="${{ secrets.DIGEST_RECIPIENTS }}"
             echo "Using production recipients (scheduled run)."
           fi
+          {
+            echo "DIGEST_RECIPIENTS<<EOF"
+            printf '%s\n' "$RECIPIENTS"
+            echo "EOF"
+          } >> "$GITHUB_ENV"
 
       - name: Send digest
         if: steps.guard.outputs.should_run == 'true' || github.event_name == 'workflow_dispatch'
