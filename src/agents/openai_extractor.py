@@ -188,7 +188,7 @@ class OpenAIExtractor:
 
     def _parse_records(self, raw_items: list[dict[str, Any]], venue: str, source_url: str) -> list[Showing]:
         results: list[Showing] = []
-        seen: set[str] = set()
+        seen: set[tuple[str, str, str, str | None]] = set()
 
         for raw in raw_items:
             if not isinstance(raw, dict):
@@ -199,13 +199,13 @@ class OpenAIExtractor:
                 continue
             url = urljoin(source_url, url)
 
-            key = f"{title.lower()}|{url}"
-            if key in seen:
-                continue
-
             start = _parse_start(raw.get("start"))
             notes = _clean_optional(raw.get("notes"))
             summary = _clean_summary(raw.get("summary"))
+            start_key = start.isoformat() if start else ""
+            key = (title.lower(), url, start_key, notes)
+            if key in seen:
+                continue
             results.append(Showing(title=title, venue=venue, start=start, url=url, notes=notes, summary=summary))
             seen.add(key)
 
