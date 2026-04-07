@@ -260,6 +260,10 @@ Recipient source of truth for GitHub sends:
 - Manual Actions runs use `DIGEST_RECIPIENTS_TEST`.
 - Local runs from your Mac use `config.yaml` unless you export `DIGEST_RECIPIENTS`.
 
+Duplicate-send protection:
+- The workflow skips sending if a successful digest run already completed earlier the same day in America/New_York.
+- Manual reruns can bypass that safeguard only by setting the `force_resend` workflow input to `true`.
+
 Then trigger a one-time test via **Actions > Weekly NYC Arthouse Digest > Run workflow**.
 
 ## Notes on reliability
