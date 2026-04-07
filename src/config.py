@@ -72,7 +72,10 @@ def _parse_recipients(raw: str | list[Any]) -> list[str]:
         recipients.append(candidate)
 
     if invalid:
-        raise ValueError(f"Invalid recipient email address(es): {', '.join(invalid)}")
+        print(f"[warn] Ignoring invalid recipient email address(es): {', '.join(invalid)}")
+
+    if not recipients:
+        raise ValueError("No valid recipient email addresses found")
 
     return recipients
 

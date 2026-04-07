@@ -31,7 +31,7 @@ def test_parse_recipients_accepts_common_separators_and_dedupes() -> None:
     ]
 
 
-def test_load_config_rejects_invalid_env_recipient(tmp_path: Path, monkeypatch) -> None:
+def test_load_config_ignores_invalid_env_recipient_when_valid_ones_exist(tmp_path: Path, monkeypatch, capsys) -> None:
     config_file = tmp_path / "config.yaml"
     config_file.write_text(
         """
@@ -46,5 +46,27 @@ smtp:
     )
     monkeypatch.setenv("DIGEST_RECIPIENTS", "good@example.com,bad address")
 
-    with pytest.raises(ValueError, match="Invalid recipient email address"):
+    config = load_config(config_file)
+
+    assert config.recipients == ["good@example.com"]
+    captured = capsys.readouterr()
+    assert "Ignoring invalid recipient email address(es): bad address" in captured.out
+
+
+def test_load_config_rejects_when_all_env_recipients_are_invalid(tmp_path: Path, monkeypatch) -> None:
+    config_file = tmp_path / "config.yaml"
+    config_file.write_text(
+        """
+smtp:
+  host: "smtp.example.com"
+  port: 587
+  username: "sender@example.com"
+  password: "secret"
+  sender: "sender@example.com"
+        """.strip(),
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("DIGEST_RECIPIENTS", "bad address")
+
+    with pytest.raises(ValueError, match="No valid recipient email addresses found"):
         load_config(config_file)
