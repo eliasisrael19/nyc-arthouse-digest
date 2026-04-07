@@ -25,7 +25,9 @@ def send_email(config: AppConfig, subject: str, html_body: str, text_body: str) 
     msg = MIMEMultipart("alternative")
     msg["Subject"] = subject
     msg["From"] = smtp.sender
-    msg["To"] = ", ".join(config.recipients)
+    # Keep recipient addresses private by sending to the actual list via SMTP
+    # while showing only the sender in the visible To header.
+    msg["To"] = smtp.sender
 
     msg.attach(MIMEText(text_body, "plain", "utf-8"))
     msg.attach(MIMEText(html_body, "html", "utf-8"))
