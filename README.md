@@ -243,7 +243,7 @@ Use this if you want sends even when your Mac is closed.
 Workflow file included:
 - `.github/workflows/weekly-digest.yml`
 
-It runs hourly on Mondays and only sends at 9:00 AM America/New_York (DST-safe via timezone guard).
+It checks every 15 minutes on Mondays and sends once during the 9:00 AM America/New_York hour (DST-safe via timezone guard plus duplicate-send protection). This avoids missed sends when GitHub skips a single hourly schedule tick.
 
 In your GitHub repo, add these **Repository Secrets**:
 - `OPENAI_API_KEY`
