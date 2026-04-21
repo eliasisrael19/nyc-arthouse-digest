@@ -45,7 +45,8 @@ jobs:
         run: |
           DOW=$(TZ=America/New_York date +%u)
           HOUR=$(TZ=America/New_York date +%H)
-          if [[ "$DOW" != "1" || "$HOUR" -lt "09" ]]; then
+          HOUR_NUM=$((10#$HOUR))
+          if [[ "$DOW" != "1" || "$HOUR_NUM" -lt 9 ]]; then
             echo "Not Monday at or after 9 AM ET. Skipping."
             echo "should_run=false" >> "$GITHUB_OUTPUT"
             exit 0

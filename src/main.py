@@ -12,6 +12,7 @@ from src.emailer import send_email
 from src.enrich import enrich_missing_summaries
 from src.models import Showing, dedupe_showings
 from src.render import render_digest
+from src.scrapers.film_forum import FilmForumScraper
 from src.scrapers.manual_yaml import ManualYamlScraper
 from src.scrapers.metrograph import MetrographScraper
 
@@ -35,7 +36,7 @@ def build_scrapers() -> dict[str, Callable[[], object]]:
         "village-east": lambda: EmptyScraper("Village East by Angelika", "Placeholder"),
         "cinema123": lambda: EmptyScraper("Cinema123 by Angelika", "Placeholder"),
         "lincoln-center": lambda: EmptyScraper("Film at Lincoln Center", "Placeholder"),
-        "film-forum": lambda: EmptyScraper("Film Forum", "Placeholder"),
+        "film-forum": FilmForumScraper,
         "a24-cherry-lane": lambda: EmptyScraper("A24 Cherry Lane", "Placeholder"),
     }
 
