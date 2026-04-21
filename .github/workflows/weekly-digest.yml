@@ -2,7 +2,7 @@ name: Weekly NYC Arthouse Digest
 
 on:
   schedule:
-    # Every 15 minutes on Mondays; guarded below to send once during the 9 AM ET hour.
+    # Every 15 minutes on Mondays; guarded below to send once on the first run at or after 9 AM ET.
     - cron: "*/15 * * * 1"
   workflow_dispatch:
     inputs:
@@ -39,18 +39,18 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v4
 
-      - name: Guard for Monday 9 AM ET hour
+      - name: Guard for Monday at or after 9 AM ET
         id: guard
         shell: bash
         run: |
           DOW=$(TZ=America/New_York date +%u)
           HOUR=$(TZ=America/New_York date +%H)
-          if [[ "$DOW" != "1" || "$HOUR" != "09" ]]; then
-            echo "Not Monday during the 9 AM ET hour. Skipping."
+          if [[ "$DOW" != "1" || "$HOUR" -lt "09" ]]; then
+            echo "Not Monday at or after 9 AM ET. Skipping."
             echo "should_run=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          echo "Monday during the 9 AM ET hour. Continuing."
+          echo "Monday at or after 9 AM ET. Continuing."
           echo "should_run=true" >> "$GITHUB_OUTPUT"
 
       - name: Set up Python
