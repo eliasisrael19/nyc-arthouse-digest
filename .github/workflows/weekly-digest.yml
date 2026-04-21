@@ -152,6 +152,16 @@ jobs:
                   fh.write("should_send=true\n")
           PY
 
+      - name: Log send decision
+        if: steps.guard.outputs.should_run == 'true' || github.event_name == 'workflow_dispatch'
+        shell: bash
+        run: |
+          if [[ "${{ steps.duplicate_guard.outputs.should_send }}" == "true" ]]; then
+            echo "Proceeding with digest send because it is Monday at or after 9 AM ET and no successful send has completed yet today, or force_resend was requested."
+          else
+            echo "Skipping digest send because a successful digest already completed earlier today in America/New_York."
+          fi
+
       - name: Send digest
         if: (steps.guard.outputs.should_run == 'true' || github.event_name == 'workflow_dispatch') && steps.duplicate_guard.outputs.should_send == 'true'
         run: |
