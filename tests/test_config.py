@@ -31,6 +31,20 @@ def test_parse_recipients_accepts_common_separators_and_dedupes() -> None:
     ]
 
 
+def test_parse_recipients_accepts_display_names_and_json_lists() -> None:
+    assert _parse_recipients('Alice Example <alice@example.com>; bob@example.com') == [
+        "alice@example.com",
+        "bob@example.com",
+    ]
+
+
+def test_parse_recipients_accepts_json_array_string() -> None:
+    assert _parse_recipients('["one@example.com", "two@example.com"]') == [
+        "one@example.com",
+        "two@example.com",
+    ]
+
+
 def test_load_config_ignores_invalid_env_recipient_when_valid_ones_exist(tmp_path: Path, monkeypatch, capsys) -> None:
     config_file = tmp_path / "config.yaml"
     config_file.write_text(
@@ -70,3 +84,23 @@ smtp:
 
     with pytest.raises(ValueError, match="No valid recipient email addresses found"):
         load_config(config_file)
+
+
+def test_load_config_accepts_display_name_env_recipients(tmp_path: Path, monkeypatch) -> None:
+    config_file = tmp_path / "config.yaml"
+    config_file.write_text(
+        """
+smtp:
+  host: "smtp.example.com"
+  port: 587
+  username: "sender@example.com"
+  password: "secret"
+  sender: "sender@example.com"
+        """.strip(),
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("DIGEST_RECIPIENTS", "Digest Test <digest@example.com>")
+
+    config = load_config(config_file)
+
+    assert config.recipients == ["digest@example.com"]

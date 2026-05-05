@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from email.utils import parseaddr
+import json
 from pathlib import Path
 import os
 import re
@@ -47,14 +49,37 @@ def _env_bool(name: str, default: bool) -> bool:
     return raw.strip().lower() in {"1", "true", "yes", "on"}
 
 
-def _parse_recipients(raw: str | list[Any]) -> list[str]:
+def _coerce_recipient_parts(raw: str | list[Any]) -> list[str]:
     if isinstance(raw, str):
-        parts = re.split(r"[\n,;]+", raw)
-    elif isinstance(raw, list):
-        parts = raw
-    else:
-        raise ValueError("Recipients must be a string or list of strings")
+        stripped = raw.strip()
+        if not stripped:
+            return []
 
+        if stripped.startswith("["):
+            try:
+                parsed = json.loads(stripped)
+            except json.JSONDecodeError:
+                parsed = None
+            else:
+                if isinstance(parsed, list):
+                    return [str(item) for item in parsed]
+
+        normalized = stripped.replace("\r", "\n").replace(";", ",")
+        parts: list[str] = []
+        for token in re.split(r"[\n,]+", normalized):
+            candidate = token.strip()
+            if not candidate:
+                continue
+            _, address = parseaddr(candidate)
+            parts.append(address if EMAIL_RE.match(address) else candidate)
+        return parts
+    if isinstance(raw, list):
+        return [str(part) for part in raw]
+    raise ValueError("Recipients must be a string or list of strings")
+
+
+def _parse_recipients(raw: str | list[Any]) -> list[str]:
+    parts = _coerce_recipient_parts(raw)
     recipients: list[str] = []
     invalid: list[str] = []
     seen: set[str] = set()

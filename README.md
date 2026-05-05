@@ -87,7 +87,7 @@ smtp:
 
 ### Environment variables (override YAML)
 
-- `DIGEST_RECIPIENTS` (comma-separated)
+- `DIGEST_RECIPIENTS` (comma-separated, display-name syntax, or JSON array)
 - `SMTP_HOST`
 - `SMTP_PORT`
 - `SMTP_USERNAME`
@@ -248,7 +248,7 @@ It checks every 15 minutes on Mondays and sends once on the first run at or afte
 In your GitHub repo, add these **Repository Secrets**:
 - `OPENAI_API_KEY`
 - `OPENAI_MODEL` (optional, e.g. `gpt-5-mini`)
-- `DIGEST_RECIPIENTS` (comma-separated emails)
+- `DIGEST_RECIPIENTS` (comma-separated emails, display-name syntax, or JSON array)
 - `SMTP_HOST` (`smtp.mail.me.com`)
 - `SMTP_PORT` (`587`)
 - `SMTP_USERNAME`
